@@ -1,5 +1,5 @@
 
-# A Minimal Implementation of Piano Transcription
+# Improving piano transcription by LLM-based decoder
 
 0. Install dependencies
 
