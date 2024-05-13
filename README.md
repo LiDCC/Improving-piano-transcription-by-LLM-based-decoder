@@ -2,8 +2,8 @@
 # Improving piano transcription by LLM-based decoder
 
 ## Motivation
-a.“frame-level AMT”: complicated rule-based post-processing step
-b.“seq-to-seq”: predicts onset, offset, pitch, and velocity simultaneously, resulting in a lengthy output token sequence. The input length have to be controled to 2 seconds.
+- “frame-level AMT”: complicated rule-based post-processing step
+- “seq-to-seq”: predicts onset, offset, pitch, and velocity simultaneously, resulting in a lengthy output token sequence. The input length have to be controled to 2 seconds.
 
 0. Install dependencies
 
