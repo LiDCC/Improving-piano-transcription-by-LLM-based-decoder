@@ -3,7 +3,7 @@
 
 ## Motivation
 - “frame-level AMT”: complicated rule-based post-processing step
-- “seq-to-seq”: predicts onset, offset, pitch, and velocity simultaneously, resulting in a lengthy output token sequence. The input length have to be controled to 2 seconds.
+- “seq-to-seq AMT”: predicts onset, offset, pitch, and velocity simultaneously, resulting in a lengthy output token sequence.
 
 0. Install dependencies
 
