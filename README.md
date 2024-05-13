@@ -51,7 +51,7 @@ python train_llama_mt_on_hft.py
 python train_llama_mt_vel_hft.py
 # train HFTransformer+Decoder for offset detection
 python train_llama_mt_off_hft.py
-、、、
+```
 
 # Inference
 ```bash
@@ -75,4 +75,4 @@ python inference_llama_mt_on_hft.py
 python inference_llama_mt_vel_hft.py
 # train HFTransformer+Decoder for offset detection
 python inference_llama_mt_off_hft.py
-、、、
+```
