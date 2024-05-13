@@ -14,8 +14,8 @@ Convert piano music from audio to MIDI.
 - Our AMT models, each consisting of an encoder and a decoder, outperform their respective encoder-only versions of direct piano-roll predictions in all metrics.
 
 ## Commandline Usage
-0. Install dependencies
 
+### Install dependencies
 ```bash
 git clone https://github.com/LiDCC/Improving-piano-transcription-by-LLM-based-decoder.git
 
@@ -29,7 +29,7 @@ sh env.sh
 
 ```
 
-# Train
+### Train
 ```bash
 # train CRNN+Decoder for onset detection
 python train_llama_mt_on_crnn.py
@@ -53,7 +53,7 @@ python train_llama_mt_vel_hft.py
 python train_llama_mt_off_hft.py
 ```
 
-# Inference
+### Inference
 ```bash
 # train CRNN+Decoder for onset detection
 python inference_llama_mt_on_crnn.py
