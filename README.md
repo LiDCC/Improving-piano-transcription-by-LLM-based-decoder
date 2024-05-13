@@ -30,7 +30,7 @@ sh env.sh
 ```
 
 # Train
-、、、
+```bash
 # train CRNN+Decoder for onset detection
 python train_llama_mt_on_crnn.py
 # train CRNN+Decoder for velocity detection
@@ -54,7 +54,7 @@ python train_llama_mt_off_hft.py
 、、、
 
 # Inference
-、、、
+```bash
 # train CRNN+Decoder for onset detection
 python inference_llama_mt_on_crnn.py
 # train CRNN+Decoder for velocity detection
