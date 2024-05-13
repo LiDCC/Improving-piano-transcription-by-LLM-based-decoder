@@ -13,6 +13,7 @@ Convert piano music from audio to MIDI.
 - Hierarchical inference: predicting onset and pitch for all notes initially, then utilizing these predictions as input for the decoders to predict velocity and offset of each note, respectively.
 - Our AMT models, each consisting of an encoder and a decoder, outperform their respective encoder-only versions of direct piano-roll predictions in all metrics.
 
+## Commandline Usage
 0. Install dependencies
 
 ```bash
