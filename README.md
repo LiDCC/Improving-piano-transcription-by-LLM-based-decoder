@@ -17,7 +17,7 @@ Convert piano music from audio to MIDI.
 0. Install dependencies
 
 ```bash
-git clone https://github.com/qiuqiangkong/mini_piano_transcription
+git clone https://github.com/LiDCC/Improving-piano-transcription-by-LLM-based-decoder.git
 
 # Install Python environment
 conda create --name piano_transcription python=3.8
@@ -30,10 +30,49 @@ sh env.sh
 ```
 
 # Train
-CUDA_VISIBLE_DEVICES=0 python train.py
+、、、
+# train CRNN+Decoder for onset detection
+python train_llama_mt_on_crnn.py
+# train CRNN+Decoder for velocity detection
+python train_llama_mt_vel_crnn.py
+# train CRNN+Decoder for offset detection
+python train_llama_mt_off_crnn.py
+
+# train HPPNet+Decoder for onset detection
+python train_llama_mt_on_hpp.py
+# train HPPNet+Decoder for velocity detection
+python train_llama_mt_vel_hpp.py
+# train HPPNet+Decoder for offset detection
+python train_llama_mt_off_hpp.py
+
+# train HFTransformer+Decoder for onset detection
+python train_llama_mt_on_hft.py
+# train HFTransformer+Decoder for velocity detection
+python train_llama_mt_vel_hft.py
+# train HFTransformer+Decoder for offset detection
+python train_llama_mt_off_hft.py
+、、、
 
 # Inference
-CUDA_VISIBLE_DEVICES=0 python inference.py
+、、、
+# train CRNN+Decoder for onset detection
+python inference_llama_mt_on_crnn.py
+# train CRNN+Decoder for velocity detection
+python inference_llama_mt_vel_crnn.py
+# train CRNN+Decoder for offset detection
+python inference_llama_mt_off_crnn.py
 
-# Evaluate
-python evaluate.py
+# train HPPNet+Decoder for onset detection
+python inference_llama_mt_on_hpp.py
+# train HPPNet+Decoder for velocity detection
+python inference_llama_mt_vel_hpp.py
+# train HPPNet+Decoder for offset detection
+python inference_llama_mt_off_hpp.py
+
+# train HFTransformer+Decoder for onset detection
+python inference_llama_mt_on_hft.py
+# train HFTransformer+Decoder for velocity detection
+python inference_llama_mt_vel_hft.py
+# train HFTransformer+Decoder for offset detection
+python inference_llama_mt_off_hft.py
+、、、
