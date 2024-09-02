@@ -54,6 +54,42 @@ class TimeTokenizer:
             time = float(re.search('time=(.*)', string).group(1))
             token = round(time * self.frames_per_second)
             return token
+        
+class OnsetTimeTokenizer:
+    def __init__(self):
+        self.vocab_size = 6001
+        self.frames_per_second = 100
+    
+    def itos(self, token):
+        assert 0 <= token < self.vocab_size
+
+        time = token / self.frames_per_second
+        string = "onset={}".format(time)
+        return string
+
+    def stoi(self, string):
+        if "onset=" in string:
+            time = float(re.search('onset=(.*)', string).group(1))
+            token = round(time * self.frames_per_second)
+            return token
+        
+class OffsetTimeTokenizer:
+    def __init__(self):
+        self.vocab_size = 6001
+        self.frames_per_second = 100
+    
+    def itos(self, token):
+        assert 0 <= token < self.vocab_size
+
+        time = token / self.frames_per_second
+        string = "offset={}".format(time)
+        return string
+
+    def stoi(self, string):
+        if "offset=" in string:
+            time = float(re.search('offset=(.*)', string).group(1))
+            token = round(time * self.frames_per_second)
+            return token
 
 class MaestroLabelTokenizer(BaseTokenizer):
     def __init__(self):
@@ -152,7 +188,7 @@ class BeatTokenizer:
 class TaskTokenizer(BaseTokenizer):
     def __init__(self):
         strings = [
-            "onset", "offset", "velocity"
+            "onset", "offset", "velocity", "flatten"
         ]
         strings = ["task={}".format(s) for s in strings]
         BaseTokenizer.__init__(self, strings)
@@ -163,7 +199,9 @@ class Tokenizer:
         self.tokenizers = [
             SpecialTokenizer(),
             NameTokenizer(), 
-            TimeTokenizer(),
+            # TimeTokenizer(),
+            OnsetTimeTokenizer(),
+            OffsetTimeTokenizer(),
             MaestroLabelTokenizer(),
             Slakh2100LabelTokenizer(),
             GtzanLabelTokenizer(),

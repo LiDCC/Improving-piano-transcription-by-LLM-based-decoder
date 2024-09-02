@@ -269,6 +269,52 @@ class MaestroMultiTask:
 
             strings.extend(["<eos>"])
             masks.extend([1])
+            
+        elif self.task == "flatten":
+            active_notes = note_data["notes"]
+
+            strings = ["<sos>", "task=flatten"]
+            masks = [0, 0]
+
+            for note in active_notes:
+                onset_time = time_to_grid(note.start, self.fps)
+                offset_time = time_to_grid(note.end, self.fps)
+                pitch = note.pitch
+                velocity = note.velocity
+
+                if onset_time < 0 and 0 <= offset_time <= self.segment_seconds:
+                    strings.extend([
+                        "name=note_sustain",
+                        "pitch={}".format(pitch),
+                        "offset={}".format(offset_time),
+                        "velocity={}".format(velocity)
+                    ])
+                elif 0 <= onset_time <= offset_time <= self.segment_seconds:
+                    strings.extend([
+                        "onset={}".format(onset_time),
+                        "pitch={}".format(pitch),
+                        "offset={}".format(offset_time),
+                        "velocity={}".format(velocity)
+                    ])
+                elif 0 <= onset_time <= self.segment_seconds and self.segment_seconds < offset_time:
+                    strings.extend([
+                        "onset={}".format(onset_time),
+                        "pitch={}".format(pitch),
+                        "name=note_sustain",
+                        "velocity={}".format(velocity)
+                    ])
+                elif onset_time < 0 and self.segment_seconds < offset_time:
+                    strings.extend([
+                        "name=note_sustain",
+                        "pitch={}".format(pitch),
+                        "name=note_sustain",
+                        "velocity={}".format(velocity)
+                    ])
+
+                masks.extend([1, 1, 1, 1])
+
+            strings.extend(["<eos>"])
+            masks.extend([1])
 
         else:
             raise NotImplementedError
