@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from data.maestro import MaestroMultiTask
 from data.collate import collate_fn
 from data.io import events_to_notes
-from models.crnn import CRnn
+# from models.crnn import CRnn
 from tqdm import tqdm
 import museval
 import argparse
@@ -59,7 +59,7 @@ def train(args):
     model_name = "AudioLlama"
     checkpoints_dir = Path("./checkpoints", filename, model_name)
     
-    root = "/datasets/maestro-v3.0.0"
+    root = "/root/autodl-tmp/maestro-v3.0.0"
 
     if wandb_log:
         wandb.init(
@@ -286,21 +286,8 @@ def validate(enc_model, model, dataloader, rank):
     return np.mean(losses)
 
 def get_model(model_name):
-    if model_name == "CRnn":
-        return CRnn()
-    elif model_name == "CRnn2":
-        from models.crnn2 import CRnn2
-        return CRnn2()
-    elif model_name == "CRnn3":
-        from models.crnn3 import CRnn3
-        return CRnn3()
-    elif model_name == "CRnn3_onset_offset_vel":
-        from models.crnn3_onset_offset_vel import CRnn3_onset_offset_vel
-        return CRnn3_onset_offset_vel()
-    elif model_name == "AudioLlamaQA":
-        from models.audiollama_qa import AudioLlamaQA
-    elif model_name == "HPPNet":
-        model_file = "/datasets/maestro-v3.0.0_old/tmp/hpp-10secondsInput-120000.pt"
+    if model_name == "HPPNet":
+        model_file = "/root/autodl-tmp/hpp-10secondsInput-120000.pt"
         model = torch.load(model_file)
         return model
     else:

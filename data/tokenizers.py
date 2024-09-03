@@ -199,9 +199,9 @@ class Tokenizer:
         self.tokenizers = [
             SpecialTokenizer(),
             NameTokenizer(), 
-            # TimeTokenizer(),
-            OnsetTimeTokenizer(),
-            OffsetTimeTokenizer(),
+            TimeTokenizer(),
+            # OnsetTimeTokenizer(),
+            # OffsetTimeTokenizer(),
             MaestroLabelTokenizer(),
             Slakh2100LabelTokenizer(),
             GtzanLabelTokenizer(),

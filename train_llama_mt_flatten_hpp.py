@@ -11,7 +11,7 @@ import torch.optim as optim
 from data.maestro import MaestroMultiTask
 from data.collate import collate_fn
 from data.io import events_to_notes
-from models.crnn import CRnn
+# from models.crnn import CRnn
 from tqdm import tqdm
 import museval
 import argparse
