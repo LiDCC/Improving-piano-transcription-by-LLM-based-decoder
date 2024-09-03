@@ -1,4 +1,4 @@
-*.pt
+checkpoints
 *.pth
 *.json
 *.pyc
