@@ -4,3 +4,5 @@ checkpoints
 *.pyc
 *.log
 wandb
+*.mid
+*.midi

@@ -286,19 +286,19 @@ class MaestroMultiTask:
                     strings.extend([
                         "name=note_sustain",
                         "pitch={}".format(pitch),
-                        "offset={}".format(offset_time),
+                        "time={}".format(offset_time),
                         "velocity={}".format(velocity)
                     ])
                 elif 0 <= onset_time <= offset_time <= self.segment_seconds:
                     strings.extend([
-                        "onset={}".format(onset_time),
+                        "time={}".format(onset_time),
                         "pitch={}".format(pitch),
-                        "offset={}".format(offset_time),
+                        "time={}".format(offset_time),
                         "velocity={}".format(velocity)
                     ])
                 elif 0 <= onset_time <= self.segment_seconds and self.segment_seconds < offset_time:
                     strings.extend([
-                        "onset={}".format(onset_time),
+                        "time={}".format(onset_time),
                         "pitch={}".format(pitch),
                         "name=note_sustain",
                         "velocity={}".format(velocity)

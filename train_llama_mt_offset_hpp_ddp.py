@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from data.maestro import MaestroMultiTask
 from data.collate import collate_fn
 from data.io import events_to_notes
-from models.crnn import Note_pedal
+# from models.crnn import CRnn
 from tqdm import tqdm
 import museval
 import argparse
@@ -28,18 +28,14 @@ def cleanup():
     dist.destroy_process_group()
 
 def train(args):
-    # master_addr = "localhost"  # Replace with actual IP
-    # master_port = "29600"  # Choose any available port
-
-    # # Set environment variables
-    # os.environ['MASTER_ADDR'] = master_addr
-    # os.environ['MASTER_PORT'] = master_port
-    
     dist.init_process_group(backend="nccl", init_method="env://")
-    
-    # Rest of your code remains the same
+    # rank = dist.get_rank()
+    # world_size = dist.get_world_size()
+    # torch.cuda.set_device(args.local_rank)
+    # device = torch.device(f'cuda:{args.local_rank}')
     rank = int(os.environ["RANK"])
     world_size = int(os.environ["WORLD_SIZE"])
+    # local_rank = int(os.environ["LOCAL_RANK"])
     local_rank = int(os.environ.get("LOCAL_RANK", -1))
     torch.cuda.set_device(local_rank)
     device = torch.device("cuda", local_rank)
@@ -47,8 +43,8 @@ def train(args):
     print(f"Local rank: {local_rank}")
     
     # Default parameters
-    batch_size = 5
-    num_workers = 8
+    batch_size = 8
+    num_workers = 16
     evaluate_step_frequency = 10000 // world_size
     save_step_frequency = 1000 // world_size
     training_steps = 1000000 // world_size
@@ -61,14 +57,15 @@ def train(args):
     wandb_log = True if rank == 0 else False
 
     model_name = "AudioLlama"
-    checkpoints_dir = Path("./checkpoints", filename, model_name)
+    model_setting = "tiny"
+    checkpoints_dir = Path("./checkpoints", model_setting, filename, model_name)
     
     root = "/root/autodl-tmp/maestro-v3.0.0"
 
     if wandb_log:
         wandb.init(
             project="mini_piano_transcription",
-            name=filename
+            name=model_setting + "_" + filename
         )
 
     tokenizer = Tokenizer()
@@ -80,16 +77,16 @@ def train(args):
         segment_seconds=segment_seconds,
         tokenizer=tokenizer,
         max_token_len=max_token_len,
-        task="flatten"
+        task="offset"
     )
 
     test_dataset = MaestroMultiTask(
         root=root,
-        split="test",
+        split="validation",
         segment_seconds=segment_seconds,
         tokenizer=tokenizer,
         max_token_len=max_token_len,
-        task="flatten"
+        task="offset"
     )
 
     # Sampler
@@ -131,21 +128,21 @@ def train(args):
         pin_memory=True
     )
 
-    enc_model_name = "CRnn"
-    checkpoint_path = Path("/root/autodl-tmp/CRNN_note_F1=0.9677_pedal_F1=0.9186.pth")
+    enc_model_name = "HPPNet"
     enc_model = get_model(enc_model_name)
-    enc_model.load_state_dict2(torch.load(checkpoint_path)["model"])
     enc_model.to(device)
+    enc_model = DDP(enc_model, device_ids=[rank])
 
     config = EncDecConfig(
         block_size=max_token_len + 1, 
         vocab_size=tokenizer.vocab_size, 
         padded_vocab_size=tokenizer.vocab_size, 
-        n_layer=6, 
-        n_head=16, 
-        n_embd=1024, 
-        audio_n_embd=1536
+        n_layer=4, 
+        n_head=8, 
+        n_embd=512,
+        audio_n_embd=88*4
     )
+    
 
     model = EncDecPos(config)
     model.to(device)
@@ -220,7 +217,8 @@ def train(args):
 
                 enc_model.train()
                 model.train()
-                audio_emb = enc_model(audio)["onoffvel_emb_h"]
+                audio_emb = enc_model.module.run_on_batch(audio)
+                audio_emb = audio_emb.permute(0, 2, 3, 1).reshape(batch_size, 501, 4 * 88)
 
                 logits, loss = model(audio_emb=audio_emb, idx=input_token, target=target_token, target_mask=target_mask)
                 
@@ -233,12 +231,12 @@ def train(args):
                     test_loss = validate(enc_model, model, eval_test_dataloader, rank)
                     print("--- step: {} ---".format(step))
                     print("Train loss: {:.4f}".format(train_loss))
-                    print("Test loss: {:.4f}".format(test_loss))
+                    print("Val loss: {:.4f}".format(test_loss))
 
                     if wandb_log:
                         wandb.log({
                             "train loss": train_loss,
-                            "test loss": test_loss
+                            "val loss": test_loss
                         })
 
                 if rank == 0 and step % save_step_frequency == 0:
@@ -251,7 +249,7 @@ def train(args):
                     print("Save model to {}".format(checkpoint_path))
 
                     checkpoint_path = Path(checkpoints_dir, "step={}_encoder.pth".format(step))
-                    torch.save(enc_model.state_dict(), checkpoint_path)
+                    torch.save(enc_model.module.state_dict(), checkpoint_path)
                     print("Save model to {}".format(checkpoint_path))
 
                 step += 1
@@ -263,10 +261,6 @@ def train(args):
 def validate(enc_model, model, dataloader, rank): 
 
     device = torch.device(f"cuda:{rank}")
-    losses = []
-    
-    pred_ids = []
-    target_ids = []
     losses = []
     
     len_dataset = len(dataloader.dataset)
@@ -283,9 +277,10 @@ def validate(enc_model, model, dataloader, rank):
 
         with torch.no_grad():
             enc_model.eval()
-            audio_emb = enc_model(audio)["onoffvel_emb_h"]
+            audio_emb = enc_model.module.run_on_batch(audio)
+            # print(audio_emb.shape)
+            audio_emb = audio_emb.permute(0, 2, 3, 1).reshape(8, 501, 4 * 88)
 
-        with torch.no_grad():
             model.eval()
             logits, loss = model(audio_emb=audio_emb, idx=input_token, target=target_token, target_mask=target_mask)
 
@@ -294,21 +289,8 @@ def validate(enc_model, model, dataloader, rank):
     return np.mean(losses)
 
 def get_model(model_name):
-    if model_name == "CRnn":
-        return Note_pedal()
-    elif model_name == "CRnn2":
-        from models.crnn2 import CRnn2
-        return CRnn2()
-    elif model_name == "CRnn3":
-        from models.crnn3 import CRnn3
-        return CRnn3()
-    elif model_name == "CRnn3_onset_offset_vel":
-        from models.crnn3_onset_offset_vel import CRnn3_onset_offset_vel
-        return CRnn3_onset_offset_vel()
-    elif model_name == "AudioLlamaQA":
-        from models.audiollama_qa import AudioLlamaQA
-    elif model_name == "HPPNet":
-        model_file = "/datasets/maestro-v3.0.0_old/tmp/hpp-10secondsInput-120000.pt"
+    if model_name == "HPPNet":
+        model_file = "/root/autodl-tmp/Improving-piano-transcription-by-LLM-based-decoder/hpp-10secondsInput-120000.pt"
         model = torch.load(model_file)
         return model
     else:
